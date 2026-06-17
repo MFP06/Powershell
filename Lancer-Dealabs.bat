@@ -12,5 +12,10 @@ if not exist "Interface_graphique.ps1" (
     exit /b 1
 )
 
-powershell.exe -ExecutionPolicy Bypass -File "%CD%\Interface_graphique.ps1"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%CD%\Interface_graphique.ps1"
 
+if errorlevel 1 (
+    echo.
+    echo L'interface s'est arretee avec une erreur.
+    pause
+)
