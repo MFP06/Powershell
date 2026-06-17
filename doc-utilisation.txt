@@ -1,7 +1,18 @@
 cd C:\wamp64\www\PowerShell
 
+#ouvrir environement pour installer les bibliotheques dont on a besoin
 py -3 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 
+#installer tout ce qu'il faut
 python -m pip freeze > requirements.txt
+
+#push sur github
+git status
+git add .
+git commit -m "texte voulus pour le commit"
+git push
+
+#cloner depo github
+git clone https://github.com/PSEUDO/Powershell
