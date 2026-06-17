@@ -1,22 +1,35 @@
+Aller dans le dossier :
 cd C:\wamp64\www\PowerShell
 
-#ouvrir environement pour installer les bibliotheques dont on a besoin
-py -3 -m venv .venv
+Installer les dependances Python si besoin :
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 
-#installer tout ce qu'il faut
-python -m pip freeze > requirements.txt
+Lancer l'interface :
+powershell -ExecutionPolicy Bypass -File .\Interface_graphique.ps1
 
-#push sur github
+Dans l'interface :
+- Mots : exemple ssd
+- Prix max : 0 pour ne pas filtrer
+- Hot min : exemple 20 ou 100
+- Scan sec. : temps entre deux scans, minimum 30 secondes
+- Chercher : fait une recherche une seule fois
+- Surveiller : relance tout seul et notifie quand une nouvelle promo apparait
+- Ouvrir : ouvre la promo selectionnee
+
+Lancer en console une seule fois :
+powershell -ExecutionPolicy Bypass -File .\script.ps1 -Mots "ssd" -PrixMax 0 -HotMin 20 -Top 10
+
+Lancer en console en surveillance :
+powershell -ExecutionPolicy Bypass -File .\script.ps1 -Mots "ssd" -PrixMax 0 -HotMin 100 -Top 10 -Surveille -IntervalleSecondes 300
+
+Arreter la surveillance console :
+CTRL + C
+
+Le fichier resultats_dealabs.csv contient les derniers resultats.
+
+Push Git :
 git status
 git add .
-git commit -m "texte voulus pour le commit"
+git commit -m "Simplify Dealabs watcher"
 git push
-
-#cloner depo github
-git clone https://github.com/PSEUDO/Powershell
-
-#si probleme durant le push car le clone n'a pas tout les nouveaux fichier
-git pull origin main --rebase
-git push origin main
