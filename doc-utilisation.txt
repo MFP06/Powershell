@@ -16,3 +16,7 @@ git push
 
 #cloner depo github
 git clone https://github.com/PSEUDO/Powershell
+
+#si probleme durant le push car le clone n'a pas tout les nouveaux fichier
+git pull origin main --rebase
+git push origin main
