@@ -193,13 +193,18 @@ $boutonOuvrir.Add_Click({
     }
 })
 
-$fenetre.Controls.AddRange(@(
-    $labelMots, $zoneMots,
-    $labelPrix, $zonePrix,
-    $labelHot, $zoneHot,
-    $labelTemps, $zoneTemps,
-    $boutonChercher, $boutonSurveiller, $boutonOuvrir,
-    $tableau, $texteEtat
-))
+$fenetre.Controls.Add($labelMots)
+$fenetre.Controls.Add($zoneMots)
+$fenetre.Controls.Add($labelPrix)
+$fenetre.Controls.Add($zonePrix)
+$fenetre.Controls.Add($labelHot)
+$fenetre.Controls.Add($zoneHot)
+$fenetre.Controls.Add($labelTemps)
+$fenetre.Controls.Add($zoneTemps)
+$fenetre.Controls.Add($boutonChercher)
+$fenetre.Controls.Add($boutonSurveiller)
+$fenetre.Controls.Add($boutonOuvrir)
+$fenetre.Controls.Add($tableau)
+$fenetre.Controls.Add($texteEtat)
 
 [void]$fenetre.ShowDialog()

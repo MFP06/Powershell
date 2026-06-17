@@ -7,7 +7,7 @@ param(
     [int]$IntervalleSecondes = 300
 )
 
-# Envoie une notification Windows simple.
+# Notification Windows simple.
 function Notifier {
     param([string]$Message)
 
@@ -25,12 +25,12 @@ function Notifier {
     $notification.Dispose()
 }
 
-# Recupere les promos Dealabs pour un mot.
+# Cherche les promos Dealabs pour un mot.
 function Chercher-Promos {
     param([string]$Mot)
 
-    $motUrl = [System.Uri]::EscapeDataString($Mot)
-    $urlRecherche = "https://www.dealabs.com/search?q=$motUrl"
+    $recherche = $Mot -replace " ", "+"
+    $urlRecherche = "https://www.dealabs.com/search?q=$recherche"
 
     try {
         $page = Invoke-WebRequest -Uri $urlRecherche -UseBasicParsing -Headers @{
@@ -43,19 +43,21 @@ function Chercher-Promos {
     }
 
     $promos = @()
+
+    # Chaque promo est dans une balise <article>.
     $articles = [regex]::Matches($page.Content, "(?is)<article\b.*?</article>")
 
     foreach ($article in $articles) {
         $htmlArticle = $article.Value
 
-        # Dealabs met les infos utiles dans un attribut data-vue3.
-        $jsonTrouve = [regex]::Match($htmlArticle, "data-vue3='(?<json>[^']*ThreadMainListItemNormalizer[^']*)'")
+        # Dealabs met les infos utiles dans data-vue3.
+        $jsonTrouve = [regex]::Match($htmlArticle, "data-vue3='([^']*ThreadMainListItemNormalizer[^']*)'")
         if (-not $jsonTrouve.Success) {
             continue
         }
 
         try {
-            $jsonTexte = [System.Net.WebUtility]::HtmlDecode($jsonTrouve.Groups["json"].Value)
+            $jsonTexte = [System.Net.WebUtility]::HtmlDecode($jsonTrouve.Groups[1].Value)
             $json = $jsonTexte | ConvertFrom-Json
             $deal = $json.props.thread
 
@@ -65,31 +67,32 @@ function Chercher-Promos {
 
             $prix = $null
             if ($null -ne $deal.price) {
-                $prix = [decimal]::Parse(([string]$deal.price), [System.Globalization.CultureInfo]::InvariantCulture)
+                $prix = [decimal]([string]$deal.price)
             }
 
             $hot = [int][Math]::Round([double]$deal.temperature)
             $lien = [string]$deal.shareableLink
 
-            $lienHtml = [regex]::Match($htmlArticle, 'href=([''"])(?<url>.*?)\1')
+            $lienHtml = [regex]::Match($htmlArticle, 'href=["'']([^"'']+)["'']')
             if ($lienHtml.Success) {
-                $lien = [System.Net.WebUtility]::HtmlDecode($lienHtml.Groups["url"].Value)
+                $lien = [System.Net.WebUtility]::HtmlDecode($lienHtml.Groups[1].Value)
             }
 
             if ($lien -and $lien -notmatch "^https?://") {
                 $lien = "https://www.dealabs.com$lien"
             }
 
-            $promos += [pscustomobject]@{
-                Mot = $Mot
-                Titre = [string]$deal.title
-                Prix = $prix
-                Hot = $hot
-                Url = $lien
-            }
+            $promo = New-Object PSObject
+            $promo | Add-Member NoteProperty Mot $Mot
+            $promo | Add-Member NoteProperty Titre ([string]$deal.title)
+            $promo | Add-Member NoteProperty Prix $prix
+            $promo | Add-Member NoteProperty Hot $hot
+            $promo | Add-Member NoteProperty Url $lien
+
+            $promos += $promo
         }
         catch {
-            # Si une promo est mal lue, on passe a la suivante.
+            # Si une promo bug, on passe a la suivante.
             continue
         }
     }
@@ -97,7 +100,7 @@ function Chercher-Promos {
     return $promos
 }
 
-# Cherche tous les mots, filtre, trie et garde les meilleures promos.
+# Cherche tous les mots et garde les meilleures promos.
 function Faire-Recherche {
     $resultats = @()
 
